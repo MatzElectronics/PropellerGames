@@ -1,3 +1,3 @@
 # Asteroids
 
-Mostly the work of @JasonDorie
+Mostly the work of [@JasonDorie](https://github.com/JasonDorie)
