@@ -37,17 +37,16 @@ int main() {
         btnSet = 0;
       }
 
-      birdPosition = (birdPosition - birdSpeed / 10);
-      birdSpeed = (birdSpeed - acceleration);
-      birdPosition = (birdPosition > 11 ? birdPosition : 11);
-      birdPosition = ((birdPosition < (oledc_getHeight()) ? birdPosition : (oledc_getHeight())));
+      birdPosition = birdPosition - birdSpeed / 10;
+      birdSpeed = birdSpeed - acceleration;
+      birdPosition = constrainInt(birdPosition, 11, oledc_getHeight());
       oledc_fillRect(10, birdPosition, 5, 5, oledc_color565(255, 255, 0));
-      if (loc < ((oledc_getWidth()) - 2) && loc > ((oledc_getWidth()) - 10)) {
-        if (birdPosition < (pipeHeight + 10) || birdPosition > (pipeHeight + pipeGap - 5)) {
+      if (loc < oledc_getWidth() - 2 && loc > oledc_getWidth() - 10) {
+        if (birdPosition < pipeHeight + 10 || birdPosition > pipeHeight + pipeGap - 5) {
           oledc_setTextColor(oledc_color565(255,255,255), oledc_color565(0xCC, 0, 0));
           oledc_setCursor(10, 20, 0);
           oledc_drawText("Game Over");
-          while (input(4)) {}
+          while (input(4));
           pause(250);
           oledc_clear(0, 0, oledc_getWidth(), oledc_getHeight());
           setup_game();
@@ -56,14 +55,14 @@ int main() {
 
       }
 
-      if (loc == ((oledc_getWidth()) - 2)) {
+      if (loc == oledc_getWidth() - 2) {
         score++;
         oledc_setCursor(1, 1, 0);
         oledc_print("%s%d%c", "Score = ", score, 32);
       }
 
       pause(gameSpeed);
-      oledc_fillRect(0, 11, oledc_getWidth(), (oledc_getHeight()) - 11, 0);
+      oledc_fillRect(0, 11, oledc_getWidth(), oledc_getHeight() - 11, 0);
 
     }
   }
