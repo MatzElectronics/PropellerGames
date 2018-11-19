@@ -4,10 +4,10 @@
 // Google Sheet for creating board layout array here: https://docs.google.com/spreadsheets/d/1lRU5S3pfA02uIeb_-zMYhUdtndrubN-DYTTId55fP5o/edit#gid=0
 
 // Define the pins the pushbuttons are connected to:
-#define BUTTON_DOWN         15
-#define BUTTON_UP           13
-#define BUTTON_LEFT         12
-#define BUTTON_RIGHT        14
+#define BUTTON_DOWN         06
+#define BUTTON_UP           05
+#define BUTTON_LEFT         04
+#define BUTTON_RIGHT        07
 #define BUTTON_RESTART      10
 
 // Define the buttons the color OLED is connected to:
@@ -45,9 +45,7 @@ int theScore = 0;
 int boardScore = 0;
 signed char lives = -1;
 
-
 int gameDelay = 20;    // ms to slow things down
-
 
 void drawBoard(void);
 void setupGame(void);
@@ -60,7 +58,7 @@ void checkButtons(void);
 void findBoardScore(void);
 void drawGhost(char g, char p);
 void reduceLives(void);
-void drawBoardPart(char l);
+void drawBoardPart(int l);
 
 int main()                                    
 {
@@ -89,15 +87,16 @@ int main()
     
     setupGame();
     findBoardScore();
+    // draw black box first.
     drawBoard();
     drawPac();
     
- 
+    
     while(1)
     {
       checkButtons();
       drawPac();
-      print("board score = %d\n", boardScore);
+
       if(boardScore == 0) {
         ghostLocation[0] = 179;
         ghostDirection[0] = UP;
@@ -151,7 +150,7 @@ void setupGame(void) {
 void findBoardScore(void) {
   for(int j = 0; j < sizeof(gameBoard); j++) {
     if(gameBoard[j] == 1 || gameBoard[j] == 2) boardScore++;
-  }    
+  }
 }
 
 void checkButtons(void) {
@@ -165,7 +164,8 @@ void checkButtons(void) {
   if(pacDirection == STOPPED) pacDirection = oldDirection;
 }
 
-void drawBoardPart(char l) {
+void drawBoardPart(int l) {
+  print("bd=%d\r",l);
   drawTile(l - TILESWIDE + 1);
   drawTile(l - TILESWIDE);
   drawTile(l - TILESWIDE - 1);
@@ -216,9 +216,6 @@ void drawGhost(char g, char p) {
   oledc_drawLine(zx*3 + vx*p - 1, zy*3 + vy*p    , zx*3 + vx*p - 1, zy*3 + vy*p + 3, colorG);
   oledc_drawLine(zx*3 + vx*p + 3, zy*3 + vy*p    , zx*3 + vx*p + 3, zy*3 + vy*p + 3, colorG);
   oledc_drawLine(zx*3 + vx*p + 1, zy*3 + vy*p    , zx*3 + vx*p + 1, zy*3 + vy*p + 3, colorG);
-  
-
-
 } 
 
 void reduceLives(void) {
@@ -295,7 +292,7 @@ void drawPac(void) {
     oledc_fillRect( gx*3 + dx*2, gy*3 - 1 + dy*2, 3, 2, 0);
     oledc_drawLine( gx*3 + 1 + dx*2, gy*3 - 1 + dy*2, gx*3 + 1 + dx*2, gy*3 + 1 + dy*2, 0);
   } else if(pacDirection == DOWN) {
-    oledc_fillRect( gx*3 + dx*2, gy*3 + 1 + dy*2, 3, 2, 0);
+    oledc_fillRect( gx*3 + dx*2, gy*3 + 2 + dy*2, 3, 2, 0);
     oledc_drawLine( gx*3 + 1 + dx*2, gy*3 + 1 + dy*2, gx*3 + 1 + dx*2, gy*3 + 3 + dy*2, 0);
   }    
        
@@ -316,7 +313,7 @@ void drawPac(void) {
   if(pacDirection == RIGHT) {
     if(pacLocation == 222) {
     // erase
-    oledc_fillRect( gx*3 + dx*2 - 1, gy*3 + dy*2 - 1, 5, 5, 0);
+    oledc_fillRect( gx*3 + dx*2 - 1, gy*3 + dy*2 - 1, 6, 5, 0);
     
     pacLocation = 196;
     
@@ -348,7 +345,6 @@ void drawPac(void) {
   
   
   drawGhost(0, 3);
-  
 
   if(ghostDirection[0] == DOWN)  ghostLocation[0] +=TILESWIDE;
   if(ghostDirection[0] == UP)    ghostLocation[0] -=TILESWIDE;
@@ -394,25 +390,22 @@ void drawPac(void) {
       oledc_fillRect((pacLocation % TILESWIDE)*3-1, (pacLocation / TILESWIDE)*3-1, 5, 5, 0);
       pacLocation = 293;
       reduceLives();
-    }    
-  }       
-  
+    }
+  }
+
   if(ghostZombieTimer[0] <= 0) {
     colorG = colorGhost;
-  }    
-  
-  
+  }
+
   // erase dot, add to score if there was a dot here
   if(gameBoard[pacLocation] == 1 || gameBoard[pacLocation] == 2) {
     gameBoard[pacLocation] = 0;
     theScore++;
     boardScore--;
   }      
-  
-        
+
   oledc_setCursor(0,56,0);
   oledc_drawNumber(theScore, DEC);
-      
 }  
 
 void canMove(void) {
@@ -436,8 +429,7 @@ void ghostCanMove(char g) {
     gateOpen = 9;
     ghostStartTimer[g]--;
   }    
-  
-  
+
   // can continue?
   if(gameBoard[ghostLocation[g] + 1] < 3  || gameBoard[ghostLocation[g] + 1] == 9  || gameBoard[ghostLocation[g] + 1] == gateOpen)  { c |= RIGHT; d++; }
   if(gameBoard[ghostLocation[g] - 1] < 3  || gameBoard[ghostLocation[g] - 1] == 9  || gameBoard[ghostLocation[g] - 1] == gateOpen)  { c |= LEFT; d++; }
@@ -446,8 +438,7 @@ void ghostCanMove(char g) {
 
   if(!(c & ghostDirection[g]) || d > 2) {
   // must change directions
-   
-  
+
     int gh = ghostLocation[g] % TILESWIDE;
     int ph = pacLocation % TILESWIDE;
     int gv = ghostLocation[g] / TILESWIDE;
@@ -504,11 +495,10 @@ void ghostCanMove(char g) {
     
     ghostDirection[g] = tempDir;      
   }   
-  
 }  
 
-
 void drawBoard(void) {
+  oledc_clear(0, 0, TILESWIDE * 3, TILESHIGH * 3);
   for( char k = 0; k < TILESWIDE; k++ ) {
     for ( char l = 0; l < TILESHIGH; l++ ) {
       int m = k + ( l * TILESWIDE );
@@ -518,15 +508,12 @@ void drawBoard(void) {
 }
 
 void drawTile(int m) { 
-  if(m >= 0 || m <= sizeof(gameBoard)) 
-  {
+  if(m >= 0 || m <= sizeof(gameBoard)) {
     int k = m % TILESWIDE;
     int l = m / TILESWIDE;
-     
+
     switch( gameBoard[m] ) {
-      // 0 is blank tile, 9 is blank tile in ghost pen
-      case 0:
-      case 9:
+      case 0:   // blank tile
         oledc_fillRect( k*3-1, l*3-1, 5, 5, 0 );
         break;      
       case 1:   // the normal dot
@@ -558,6 +545,9 @@ void drawTile(int m) {
       case 8:   // wall - horizontal piece
         oledc_drawLine( k*3 + 1, l*3, k*3 + 1, l*3 + 2, colorWall ); 
         break;
+      case 9:   // gohst pen - blank tile
+        oledc_fillRect( k*3-1, l*3-1, 5, 5, 0 );
+        break;  
       case 10:  // ghost pen - top gate
         oledc_drawLine( k*3, l*3 + 1, k*3 + 2, l*3 + 1, colorGate ); 
         break;
@@ -587,4 +577,4 @@ void drawTile(int m) {
         break;
     }                
   } 
-}   
+}
