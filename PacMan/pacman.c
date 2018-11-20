@@ -1,7 +1,10 @@
-// Pac-Man/Muncher-like game using 96x64 color OLED and pushbuttons on the 
+// Pac-Man/Muncher-like game using 96x64 color OLED and pushbuttons on the
 // Parallax Propeller MCU.
-// By M.Matz, ideas for implementation from: http://subethasoftware.com/2014/02/23/arduino-pac-man-part-10-the-story-so-far/#comment-29775
-// Google Sheet for creating board layout array here: https://docs.google.com/spreadsheets/d/1lRU5S3pfA02uIeb_-zMYhUdtndrubN-DYTTId55fP5o/edit#gid=0
+// By M.Matz, ideas for implementation from:
+//    http://subethasoftware.com/2014/02/23/arduino-pac-man-part-10-the-story-so-far/#comment-29775
+// Google Sheet for creating board layout array here:
+//    https://docs.google.com/spreadsheets/d/1lRU5S3pfA02uIeb_-zMYhUdtndrubN-DYTTId55fP5o
+
 
 // Define the pins the pushbuttons are connected to:
 #define BUTTON_DOWN         06
@@ -31,6 +34,7 @@
 #include "oledc.h"
 
 const char gameBoard1[] = {3,7,7,7,7,7,7,7,7,7,7,7,7,4,3,7,7,7,7,7,7,7,7,7,7,7,7,4,8,1,1,1,1,1,1,1,1,1,1,1,1,8,8,1,1,1,1,1,1,1,1,1,1,1,1,8,8,1,3,7,7,4,1,3,4,1,3,7,7,5,6,7,7,4,1,3,4,1,3,7,7,4,1,8,8,1,6,7,7,5,1,8,8,1,6,7,7,7,7,7,7,5,1,8,8,1,6,7,7,5,1,8,8,2,1,1,1,1,1,8,8,0,0,0,0,0,0,0,0,0,0,8,8,1,1,1,1,1,2,8,6,7,7,7,7,4,1,8,8,0,15,10,10,10,10,10,10,16,0,8,8,1,3,7,7,7,7,5,7,7,7,7,7,5,1,8,8,0,14,9,9,9,9,9,9,13,0,8,8,1,6,7,7,7,7,7,0,0,0,0,0,0,1,8,8,0,14,9,9,9,9,9,9,13,0,8,8,1,0,0,0,0,0,0,7,7,7,7,7,4,1,8,8,0,14,9,9,9,9,9,9,13,0,8,8,1,3,7,7,7,7,7,3,7,7,7,7,5,1,6,5,0,18,12,12,12,12,12,12,17,0,6,5,1,6,7,7,7,7,4,8,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,8,8,1,3,7,7,4,1,3,7,7,7,4,1,3,4,1,3,7,7,7,4,1,3,7,7,4,1,8,8,1,6,7,4,8,1,6,7,7,7,5,1,8,8,1,6,7,7,7,5,1,8,3,7,5,1,8,8,2,1,1,8,8,1,1,1,1,1,1,1,8,8,1,1,1,1,1,1,1,8,8,1,1,2,8,6,7,4,1,8,8,1,3,4,1,3,7,7,5,6,7,7,4,1,3,4,1,8,8,1,3,7,5,3,7,5,1,6,5,1,8,8,1,6,7,7,7,7,7,7,5,1,8,8,1,6,5,1,6,7,4,8,1,1,1,1,1,1,8,8,1,1,1,1,1,1,1,1,1,1,8,8,1,1,1,1,1,1,8,6,7,7,7,7,7,7,5,6,7,7,7,7,7,7,7,7,7,7,5,6,7,7,7,7,7,7,5};
+const char gameBoard2[] = {3,7,7,7,7,7,7,7,7,7,7,7,7,4,3,7,7,7,7,7,7,7,7,7,7,7,7,4,8,1,1,1,1,1,1,1,1,1,1,1,1,8,8,1,1,1,1,1,1,1,1,1,1,1,1,8,8,1,3,4,1,3,7,7,7,7,7,4,1,8,8,1,3,7,7,7,7,7,4,1,3,4,1,8,8,1,8,8,1,6,7,7,7,7,7,5,1,6,5,1,6,7,7,7,7,7,6,1,8,8,1,8,8,2,8,8,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,8,8,2,8,8,1,8,8,1,3,7,7,4,0,15,11,11,10,10,11,11,15,0,3,7,7,4,1,8,8,1,8,5,1,6,5,1,8,0,0,8,0,14,9,9,9,9,9,9,14,0,8,0,0,8,1,6,5,1,6,0,1,1,1,1,8,0,0,8,0,14,9,9,9,9,9,9,14,0,8,0,0,8,1,1,1,1,0,4,1,3,7,7,5,0,0,8,0,14,9,9,9,9,9,9,14,0,8,0,0,6,7,7,4,1,3,8,1,6,7,7,7,7,7,5,0,18,12,12,12,12,12,12,18,0,6,7,7,7,7,7,5,1,8,8,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,8,6,7,7,7,4,1,3,7,4,1,3,7,7,7,7,7,7,4,1,3,7,4,1,3,7,7,7,5,3,7,7,7,5,1,6,7,5,1,8,3,7,7,7,7,4,8,1,6,7,5,1,6,7,7,7,4,8,1,1,1,1,1,1,1,1,1,8,8,1,1,1,1,8,8,1,1,1,1,1,1,1,1,1,8,8,2,3,7,7,7,7,4,1,3,5,8,1,3,4,1,8,6,4,1,3,7,7,7,7,4,2,8,8,1,6,7,7,7,7,5,1,6,7,5,1,8,8,1,6,7,5,1,6,7,7,7,7,5,1,8,8,1,1,1,1,1,1,1,1,1,1,1,1,8,8,1,1,1,1,1,1,1,1,1,1,1,1,8,6,7,7,7,7,7,7,7,7,7,7,7,7,5,6,7,7,7,7,7,7,7,7,7,7,7,7,5};
 char gameBoard[504];
 
 int colorWall, colorDots, colorPill, colorFence, colorGate, colorPac, colorScore, colorZombie, colorGhost, colorG;
@@ -44,6 +48,8 @@ int ghostStartTimer[4];
 int theScore = 0;
 int boardScore = 0;
 signed char lives = -1;
+
+int boardTurn = 1;
 
 int gameDelay = 20;    // ms to slow things down
 
@@ -83,7 +89,17 @@ int main()
 
 
   while(1) {
-    memcpy(gameBoard, gameBoard1, sizeof(gameBoard1));
+    if (boardTurn == 1) {
+      memcpy(gameBoard, gameBoard1, sizeof(gameBoard1));
+      boardTurn++;
+    } else if (boardTurn == 2){
+      memcpy(gameBoard, gameBoard2, sizeof(gameBoard1));
+      boardTurn++;
+    }
+    
+    if (boardTurn == 3) {
+      boardTurn = 1;
+    }
     
     setupGame();
     findBoardScore();
